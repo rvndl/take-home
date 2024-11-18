@@ -1,51 +1,97 @@
 import { useEffect, useState } from "react";
-import { ListItem, useGetListData } from "../api/getListData";
-import { Card } from "./List";
+import { DeletedListItem, ListItem, useGetListData } from "../api/getListData";
+import { Card } from "./Card";
 import { Spinner } from "./Spinner";
+import { useStore } from "../store";
+import { ActionButton, ToggleButton } from "./Buttons";
 
 export const Entrypoint = () => {
+  const [areVisibleCardsVisible, setAreVisibleCardsVisible] = useState(false);
   const [visibleCards, setVisibleCards] = useState<ListItem[]>([]);
-  const listQuery = useGetListData();
+  const [deletedCards, setDeletedCards] = useState<DeletedListItem[]>([]);
 
-  // TOOD
-  // const deletedCards: DeletedListItem[] = [];
+  const {
+    deletedCardIds,
+    expendedCardIds,
+    addDeletedCard,
+    addExpendedCard,
+    removeExpendedCard,
+  } = useStore((state) => state);
+
+  const { data: cards, isLoading, refetch, isRefetching } = useGetListData();
 
   useEffect(() => {
-    if (listQuery.isLoading) {
+    if (isLoading) {
       return;
     }
 
-    setVisibleCards(listQuery.data?.filter((item) => item.isVisible) ?? []);
-  }, [listQuery.data, listQuery.isLoading]);
+    const initialVisibleCards = cards?.filter((card) => !card.isVisible) ?? [];
+    const deletedCards = initialVisibleCards.filter((card) =>
+      deletedCardIds.includes(card.id)
+    );
+    const visibleCards = initialVisibleCards.filter(
+      (card) => !deletedCardIds.includes(card.id)
+    );
 
-  if (listQuery.isLoading) {
+    setDeletedCards(deletedCards);
+    setVisibleCards(visibleCards);
+  }, [cards, deletedCardIds, isLoading]);
+
+  const handleOnCardDelete = (cardId: number) => {
+    addDeletedCard(cardId);
+  };
+
+  const handleOnCardCollapse = (cardId: number, isCollapsed: boolean) =>
+    isCollapsed ? removeExpendedCard(cardId) : addExpendedCard(cardId);
+
+  if (isLoading) {
     return <Spinner />;
   }
 
   return (
-    <div className="flex gap-x-16">
+    <div className="gap-x-16 grid grid-cols-2 max-w-screen-xl w-full">
       <div className="w-full max-w-xl">
-        <h1 className="mb-1 font-medium text-lg">My Awesome List ({visibleCards.length})</h1>
-        <div className="flex flex-col gap-y-3">
+        <h1 className="mb-1 font-medium text-lg">
+          My Awesome List ({visibleCards.length})
+        </h1>
+        <div className="flex flex-col gap-y-3 w-full">
           {visibleCards.map((card) => (
-            <Card key={card.id} title={card.title} description={card.description} />
+            <Card
+              key={card.id}
+              variant="visible"
+              card={card}
+              onCardDelete={handleOnCardDelete}
+              onCardCollapse={handleOnCardCollapse}
+              isDefaultCollapsed={!expendedCardIds.includes(card.id)}
+            />
           ))}
         </div>
       </div>
       <div className="w-full max-w-xl">
         <div className="flex items-center justify-between">
-          <h1 className="mb-1 font-medium text-lg">Deleted Cards (0)</h1>
-          <button
-            disabled
-            className="text-white text-sm transition-colors hover:bg-gray-800 disabled:bg-black/75 bg-black rounded px-3 py-1"
-          >
-            Reveal
-          </button>
+          <h1 className="mb-1 font-medium text-lg">
+            Deleted Cards ({deletedCards.length})
+          </h1>
+          <div className="flex items-center justify-center gap-x-2">
+            <ActionButton
+              onClick={() => refetch()}
+              disabled={isLoading || isRefetching}
+            >
+              {isRefetching ? "Refreshing..." : "Refresh"}
+            </ActionButton>
+            <ToggleButton
+              onToggle={(isToggled) => setAreVisibleCardsVisible(isToggled)}
+              disabled={deletedCards.length === 0}
+              toggledText="Hide"
+              untoggledText="Reveal"
+            />
+          </div>
         </div>
         <div className="flex flex-col gap-y-3">
-          {/* {deletedCards.map((card) => (
-            <Card key={card.id} card={card} />
-          ))} */}
+          {areVisibleCardsVisible &&
+            deletedCards.map((card) => (
+              <Card key={card.id} variant="deleted" card={card} />
+            ))}
         </div>
       </div>
     </div>
