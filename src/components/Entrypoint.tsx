@@ -12,10 +12,10 @@ export const Entrypoint = () => {
 
   const {
     deletedCardIds,
-    expendedCardIds,
+    expandedCardIds,
     addDeletedCard,
-    addExpendedCard,
-    removeExpendedCard,
+    addExpandedCard,
+    removeExpandedCard,
   } = useStore((state) => state);
 
   const { data: cards, isLoading, refetch, isRefetching } = useGetListData();
@@ -42,7 +42,7 @@ export const Entrypoint = () => {
   };
 
   const handleOnCardCollapse = (cardId: number, isCollapsed: boolean) =>
-    isCollapsed ? removeExpendedCard(cardId) : addExpendedCard(cardId);
+    isCollapsed ? removeExpandedCard(cardId) : addExpandedCard(cardId);
 
   if (isLoading) {
     return <Spinner />;
@@ -62,7 +62,7 @@ export const Entrypoint = () => {
               card={card}
               onCardDelete={handleOnCardDelete}
               onCardCollapse={handleOnCardCollapse}
-              isDefaultCollapsed={!expendedCardIds.includes(card.id)}
+              isDefaultCollapsed={!expandedCardIds.includes(card.id)}
             />
           ))}
         </div>

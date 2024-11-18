@@ -3,27 +3,27 @@ import { createJSONStorage, persist } from "zustand/middleware";
 
 type State = {
   deletedCardIds: number[];
-  expendedCardIds: number[];
+  expandedCardIds: number[];
 };
 
 type Actions = {
   addDeletedCard: (id: number) => void;
-  addExpendedCard: (id: number) => void;
-  removeExpendedCard: (id: number) => void;
+  addExpandedCard: (id: number) => void;
+  removeExpandedCard: (id: number) => void;
 };
 
 export const useStore = create(
   persist<State & Actions>(
     (set) => ({
       deletedCardIds: [],
-      expendedCardIds: [],
+      expandedCardIds: [],
       addDeletedCard: (id) =>
         set((state) => ({ deletedCardIds: [...state.deletedCardIds, id] })),
-      addExpendedCard: (id) =>
-        set((state) => ({ expendedCardIds: [...state.expendedCardIds, id] })),
-      removeExpendedCard: (id) =>
+      addExpandedCard: (id) =>
+        set((state) => ({ expandedCardIds: [...state.expandedCardIds, id] })),
+      removeExpandedCard: (id) =>
         set((state) => ({
-          expendedCardIds: state.expendedCardIds.filter((item) => item !== id),
+          expandedCardIds: state.expandedCardIds.filter((item) => item !== id),
         })),
     }),
     { name: "card-store", storage: createJSONStorage(() => localStorage) }
