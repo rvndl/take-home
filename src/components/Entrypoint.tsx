@@ -4,11 +4,13 @@ import { Card } from "./Card";
 import { Spinner } from "./Spinner";
 import { useStore } from "../store";
 import { ActionButton, ToggleButton } from "./Buttons";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 
 export const Entrypoint = () => {
   const [areVisibleCardsVisible, setAreVisibleCardsVisible] = useState(false);
   const [visibleCards, setVisibleCards] = useState<ListItem[]>([]);
   const [deletedCards, setDeletedCards] = useState<DeletedListItem[]>([]);
+  const [animationRef] = useAutoAnimate();
 
   const {
     deletedCardIds,
@@ -49,12 +51,12 @@ export const Entrypoint = () => {
   }
 
   return (
-    <div className="gap-x-16 grid grid-cols-2 max-w-screen-xl w-full">
+    <div className="gap-x-16 grid grid-cols-2 max-w-screen-xl w-full h-screen">
       <div className="w-full max-w-xl">
         <h1 className="mb-1 font-medium text-lg">
           My Awesome List ({visibleCards.length})
         </h1>
-        <div className="flex flex-col gap-y-3 w-full">
+        <div className="flex flex-col gap-y-3" ref={animationRef}>
           {visibleCards.map((card) => (
             <Card
               key={card.id}
@@ -87,7 +89,7 @@ export const Entrypoint = () => {
             />
           </div>
         </div>
-        <div className="flex flex-col gap-y-3">
+        <div className="flex flex-col gap-y-3" ref={animationRef}>
           {areVisibleCardsVisible &&
             deletedCards.map((card) => (
               <Card key={card.id} variant="deleted" card={card} />
