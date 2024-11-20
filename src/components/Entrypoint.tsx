@@ -20,7 +20,14 @@ export const Entrypoint = () => {
     removeExpandedCard,
   } = useStore((state) => state);
 
-  const { data: cards, isLoading, refetch, isRefetching } = useGetListData();
+  const {
+    data: cards,
+    isLoading,
+    refetch,
+    isRefetching,
+    error,
+    isError,
+  } = useGetListData();
 
   useEffect(() => {
     if (isLoading) {
@@ -45,6 +52,15 @@ export const Entrypoint = () => {
 
   const handleOnCardCollapse = (cardId: number, isCollapsed: boolean) =>
     isCollapsed ? removeExpandedCard(cardId) : addExpandedCard(cardId);
+
+  if (isError) {
+    return (
+      <section>
+        <p className="text-red-500">An error has occurred: {error.message}</p>
+        <ActionButton onClick={() => refetch()}>Retry</ActionButton>
+      </section>
+    );
+  }
 
   if (isLoading) {
     return <Spinner />;
